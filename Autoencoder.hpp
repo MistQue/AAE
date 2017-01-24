@@ -56,7 +56,7 @@ class Autoencoder
 			int n_cols = data.n_cols;
 			for(int i = 1; i <= epoch; i++)
 			{
-				std::cout << i << " - epoch -";
+				std::cout << i << " epoch : ";
 				int col = 0;
 				const arma::mat& shuffleData = arma::shuffle(data, 1);
 				while(col < n_cols)
@@ -72,7 +72,7 @@ class Autoencoder
 					col += batchSize;
 				}
 
-				std::cout << "error : " << error << std::endl;
+				std::cout << error << std::endl;
 //				std::cout << output << std::endl;
 			}
 			std::cout << "Finish" << std::endl;	
