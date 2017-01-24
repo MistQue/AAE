@@ -1,1 +1,1 @@
-# Adversarial Autoencoder
+# Autoencoder implement by C++11
