@@ -16,10 +16,10 @@ thrid template parameter is activation of output layer
 fourth template parameter is optimizer 
 *************************/
 template <class T1, class T2, class T3, class T4>  
-class GAN
+class Autoencoder
 {
 	public:
-		GAN(std::vector<int>& v)
+		Autoencoder(std::vector<int>& v)
 		{	
 			// 784-500-10-500-784			
 			std::vector<int>::iterator it;
@@ -80,7 +80,7 @@ class GAN
 		void SaveWeight()
 		{
 			int size = layerList.size() - 1;
-			std::string fileName = "weight";
+			std::string fileName = "weight/weight";
 			int i = 0;
 			for(;i < size; i++)
 			{
