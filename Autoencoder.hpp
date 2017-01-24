@@ -105,6 +105,7 @@ class Autoencoder
 		arma::mat Test(const arma::mat& data)
 		{
 			Feedforward(data);
+			std::cout << "Test Finish" << std::endl;
 			return output;
 		}
 	private:
