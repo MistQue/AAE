@@ -10,7 +10,7 @@
 int main()
 {
 
-	int epoch = 1000;
+	int epoch = 10;
 	int batchSize = 100;
 	double learnRate = 0.02;
 	std::vector<int> v = {784, 500, 20, 500, 784};
@@ -18,33 +18,34 @@ int main()
 	std::string train_file = "mnist/train-images-idx3-ubyte";
 	arma::mat data = read_Mnist(train_file) / 255.0;
 	std::cout << "Training data size: " << size(data) << std::endl;
-	GAN<LeastSquare, Sigmoid> g(v);
+	GAN<LeastSquare, Sigmoid, Sigmoid, SGD> g(v);
 	g.Train(data, epoch, batchSize, learnRate);
 	g.SaveWeight();
 	
 	// test
 	
-	/*
-	GAN<Sigmoid> testG(epoch, batchSize, learnRate);
-	for(int i= 1; i < 7; i++)
+	
+	GAN<LeastSquare, Sigmoid, Sigmoid, SGD> testG(v);
+	for(int i= 1; i < 5; i++)
 	{
 
 		arma::mat tmp;
 		tmp.load("weight" + std::to_string(i));
 		weight.push_back(tmp);
 	}
+
 	testG.LoadWeight(weight);
-	*/
-	arma::mat testData = data.col(1) * 255;
-	arma::mat testMat = g.Test(testData) * 255;
+
+	arma::mat testData = data.col(1000) * 255;
+	arma::mat testResult = testG.Test(testData) * 255;
 
 	testData.reshape(28, 28);
-	testMat.reshape(28, 28);
+	testResult.reshape(28, 28);
 
-	auto cvMat1 = to_cvmat(testData);
-	auto cvMat2 = to_cvmat(testMat);
-	cv::imwrite("test1.png", cvMat1);
-	cv::imwrite("test2.png", cvMat2);
+	auto cvData = to_cvmat(testData);
+	auto cvResult = to_cvmat(testResult);
+	cv::imwrite("testData.png", cvData);
+	cv::imwrite("testResult.png", cvResult);
 
 	return 0;
 }

@@ -4,60 +4,48 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <memory>
 #include "Layer.hpp" 
 #include "Loss.hpp"
+#include "Optimizer.hpp"
 /*************************
  
 first template parameter is type of loss function  
 second template parameter is activation of hidden layer
 thrid template parameter is activation of output layer 
+fourth template parameter is optimizer 
 *************************/
-template <class T1, class T2>  
+template <class T1, class T2, class T3, class T4>  
 class GAN
 {
 	public:
 		GAN(std::vector<int>& v)
 		{	
 			// 784-500-10-500-784			
-			for(std::vector<int>::iterator it = v.begin(); \
-				it != v.end() - 1; it++)
+			std::vector<int>::iterator it;
+			for(it = v.begin(); it != v.end() - 2; it++)
 			{
-				Layer<T2> l(*it, *(it + 1));
-				layerList.push_back(l);
+				layerList.emplace_back(new Layer<T2>(*it, *(it+1)));
 			}
+			layerList.emplace_back(new Layer<T3>(*it, *(it+1)));
 		}
 		void Feedforward(arma::mat x)
 		{
 			for(auto& i:layerList)
-				x = i.Compute(x);
+				x = static_cast<Layer<T2>*>(i.get())->Compute(x);
 			output = x;
 		}
-		void Backpropagation(const arma::mat& batch, 
+		void Backpropagation(const arma::mat& batch, \
 							const arma::mat& target, double& error)
 		{
 			arma::mat delta;
-			
-			T1()(target, output, batchSize, delta, error);
-			
 			double scalar = alpha * (1./double(batchSize));
 
-			int size = layerList.size() - 1;
+			// loss function	
+			T1()(target, output, batchSize, delta, error);
 
-			delta = delta % layerList[size].dy;
-			arma::mat dw = delta * layerList[size - 1].y.t();
-			layerList[size].weight -= scalar * dw;
-
-			for(int i = size - 1; i > 0; i--)
-			{
-				delta = (layerList[i + 1].weight.t() * delta ) % \
-						layerList[i].dy;
-				dw = delta * layerList[i - 1].y.t();
-				layerList[i].weight -= scalar * dw; 
-			}
-
-			delta = (layerList[1].weight.t() * delta) % layerList[0].dy;
-			dw = delta * batch.t();
-			layerList[0].weight -= scalar * dw; 
+			// Optimizer
+			T4().template Optimize<T2, T3>(layerList, delta, batch, scalar);
 		}
 		void Train(const arma::mat& data, const int& epoch, \
 				   const int& batchSize, const double& alpha)
@@ -91,19 +79,27 @@ class GAN
 		}
 		void SaveWeight()
 		{
-			int l = 1;
+			int size = layerList.size() - 1;
 			std::string fileName = "weight";
-			for(auto& i:layerList)
+			int i = 0;
+			for(;i < size; i++)
 			{
-				i.weight.save(fileName + std::to_string(l));
-				l++;	
+				static_cast<Layer<T2>*>(layerList[i].get())->weight.save\
+										(fileName + std::to_string(i + 1));
 			}
+			static_cast<Layer<T3>*>(layerList[i].get())->weight.save\
+									(fileName + std::to_string(i + 1));
 		}
 		void LoadWeight(const std::vector<arma::mat>& weight)
 		{
 			std::cout << "Loading Weight" << std::endl;
-			for(int i = 0; i < 6; i++ )
-				layerList[i].weight = weight[i];
+			int size = layerList.size() - 1;
+			int i = 0;
+			for(; i < size; i++ )
+			{
+				static_cast<Layer<T2>*>(layerList[i].get())->weight = weight[i];
+			}
+			static_cast<Layer<T3>*>(layerList[i].get())->weight  = weight[i];
 			std::cout << "Loading Finish" << std:: endl;
 		}
 		arma::mat Test(const arma::mat& data)
@@ -118,6 +114,6 @@ class GAN
 		int batchSize;
 		double alpha;
 		arma::mat output;
-		std::vector < Layer<T2> > layerList;
+		std::vector<std::unique_ptr<Baselayer>> layerList;
 };
 #endif
