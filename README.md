@@ -1,4 +1,4 @@
 # Autoencoder 
 - Implement autoencoder by C++11
-- Use Armadillo libarary
+- Use Armadillo library
 
