@@ -29,8 +29,7 @@ class SGD
 						static_cast<Layer<T1>*>(layerList[i].get())->dy;
 				dw = delta * static_cast<Layer<T1>*>\
 					(layerList[i - 1].get())->y.t();
-				static_cast<Layer<T1>*>(layerList[i].get())->weight -= \
-																scalar * dw; 
+				static_cast<Layer<T1>*>(layerList[i].get())->weight -= scalar * dw; 
 			}
 
 			delta = (static_cast<Layer<T1>*>\
